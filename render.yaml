@@ -9,4 +9,4 @@ services:
       - key: PYTHON_VERSION
         value: 3.10.12
       - key: IBM_QUANTUM_TOKEN
-        sync: true
+        generateValue: true
