@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Four Wizards - Quantum Explorer</title>
+    <title>cosmiQ - Orbital Traffic Control</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +19,9 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.145.0/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.145.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/satellite.js@4.0.0/dist/satellite.min.js"></script>
 </head>
 
 <body>
@@ -27,24 +30,43 @@
     <aside class="sidebar">
         <div class="logo-area">
             <span class="material-symbols-outlined logo-icon" style="color:#FFA000">auto_awesome</span>
-            <span class="logo-text">Four <span style="font-weight:300">Wizards</span></span>
+            <span class="logo-text">cosm<span style="font-weight:300">iQ</span><span
+                    style="color:var(--md-sys-color-primary); margin-left:2px">.live</span></span>
         </div>
 
         <div class="scroll-area">
             <form id="configForm">
 
                 <div class="form-section">
-                    <span class="section-title">Route Configuration</span>
+                    <span class="section-title">Constellation Config</span>
 
                     <!-- Removed Topology Select as TSP is fully connected distance graph -->
 
                     <div class="input-group">
+                        <label class="input-label">Data Source</label>
+                        <select id="constellation_source" name="constellation_source" class="md-select">
+                            <option value="simulated">Simulated (Standard LEO)</option>
+                            <option value="real_time">Real-time (CelesTrak)</option>
+                        </select>
+                    </div>
+
+                    <div id="real_time_options" class="input-group hidden">
+                        <label class="input-label">Constellation Group</label>
+                        <select id="constellation_group" name="constellation_group" class="md-select">
+                            <option value="starlink">Starlink</option>
+                            <option value="gps-ops">GPS (Operational)</option>
+                            <option value="iridium-next">Iridium NEXT</option>
+                            <option value="oneweb">OneWeb</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
                         <div class="md-slider-container">
                             <div class="slider-label-row">
-                                <span>Cities (Max 5 due to N² Qubits)</span>
-                                <span id="n_nodes_val">4</span>
+                                <span>Satellites (Total Nodes)</span>
+                                <span id="n_nodes_val">3</span>
                             </div>
-                            <input type="range" id="n_nodes" name="n_nodes" min="3" max="5" value="4">
+                            <input type="range" id="n_nodes" name="n_nodes" min="3" max="5" value="3">
                         </div>
                     </div>
                 </div>
@@ -69,8 +91,10 @@
                     <div class="input-group">
                         <label class="input-label">Backend</label>
                         <select id="quantum_backend" name="quantum_backend" class="md-select">
-                            <option value="simulator (local)">Simulator (Local)</option>
-                            <option value="ibm_brisbane">IBM Brisbane</option>
+                            <option value="simulator">Local Simulator</option>
+                            <option value="ibm_fez">IBM Fez</option>
+                            <option value="ibm_marrakesh">IBM Marrakesh</option>
+                            <option value="ibm_torino">IBM Torino</option>
                         </select>
                     </div>
 
@@ -84,8 +108,8 @@
                 </div>
 
                 <button type="submit" id="runBtn" class="btn-primary">
-                    <span class="material-symbols-outlined">rocket_launch</span>
-                    Run Simulation
+                    <span class="material-symbols-outlined">satellite_alt</span>
+                    Optimize Routing
                 </button>
 
             </form>
@@ -96,7 +120,7 @@
     <main class="main-content">
         <!-- Top App Bar -->
         <div class="top-app-bar">
-            <div class="app-title">Experiment Dashboard</div>
+            <div class="app-title">Orbital Control Center</div>
 
             <nav class="tab-bar">
                 <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
@@ -115,7 +139,23 @@
             <!-- Dashboard Tab -->
             <div id="dashboard" class="view-panel">
 
-                <!-- Loading State -->
+                <!-- 3D Hero Visualization -->
+                <div class="card hero-3d-card">
+                    <div id="orbital-viewport" class="orbital-3d-container">
+                        <div class="viewport-overlay">
+                            <div class="status-badge">
+                                <span class="dot pulse"></span>
+                                Live Orbital View
+                            </div>
+                            <div class="viewport-controls">
+                                <button class="view-toggle-btn active" data-view="quantum">Quantum Path</button>
+                                <button class="view-toggle-btn" data-view="classical">Classical Path</button>
+                                <button class="view-toggle-btn" data-view="both">Compare Both</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="loading" class="loading-overlay hidden">
                     <div class="md-spinner"></div>
                     <p>Executing Quantum Circuit...</p>
@@ -125,52 +165,53 @@
                     <div style="text-align:center; padding: 60px; color: var(--md-sys-color-secondary)">
                         <span class="material-symbols-outlined"
                             style="font-size: 64px; margin-bottom: 20px; opacity: 0.2">science</span>
-                        <h2>Ready to Experiment</h2>
-                        <p style="margin-top:10px">Configure parameters on the left and invoke the solver.</p>
+                        <h2>Operational Status: Ready</h2>
+                        <p style="margin-top:10px">Configure the LEO constellation parameters to begin path
+                            optimization.</p>
                     </div>
                 </div>
 
                 <div id="results-area" class="hidden">
+                    <!-- Topology Plots -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div class="card">
+                            <h3>Classical Topology</h3>
+                            <div id="plot-classical" class="plot-wrapper" style="height: 300px"></div>
+                        </div>
+                        <div class="card">
+                            <h3>Quantum Topology</h3>
+                            <div id="plot-quantum" class="plot-wrapper" style="height: 300px"></div>
+                        </div>
+                    </div>
+
                     <!-- Metrics Row -->
                     <div class="metrics-row">
                         <div class="metric-card">
-                            <div class="metric-label">Best Cut (Classical)</div>
+                            <div class="metric-label">Classical Latency (Dijkstra)</div>
                             <div class="metric-value" id="c-cost-val">-</div>
                             <div class="metric-sub" id="c-time-val">-</div>
                         </div>
                         <div class="metric-card" style="background-color: var(--md-sys-color-primary-container)">
-                            <div class="metric-label" style="color: var(--md-sys-color-on-primary-container)">Best Cut
-                                (Quantum)</div>
+                            <div class="metric-label" style="color: var(--md-sys-color-on-primary-container)">Quantum
+                                Latency (QAOA)</div>
                             <div class="metric-value" id="q-cost-val"
                                 style="color: var(--md-sys-color-on-primary-container)">-</div>
                             <div class="metric-sub" id="q-time-val"
                                 style="color: var(--md-sys-color-on-primary-container)">-</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-label">Final State</div>
-                            <div class="metric-value" id="bitstring-val" style="font-size: 18px">|00000⟩</div>
+                            <div class="metric-label">Optimized Routing Path</div>
+                            <div class="metric-value" id="bitstring-val" style="font-size: 18px">-</div>
+                            <div class="metric-sub" id="delta-label">Comparison</div>
                         </div>
                     </div>
 
-                    <!-- Visualizations -->
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="card">
-                            <h3>Classical Partition</h3>
-                            <div id="plot-classical" class="plot-wrapper"></div>
-                        </div>
-                        <div class="card">
-                            <h3>Quantum Partition</h3>
-                            <div id="plot-quantum" class="plot-wrapper"></div>
-                        </div>
+                    <!-- Performance Chart -->
+                    <div class="card">
+                        <h3>Performance Comparison</h3>
+                        <div id="plot-performance" class="plot-wrapper" style="height: 400px"></div>
                     </div>
 
-                    <div class="card" style="margin-top: 24px">
-                        <h3>Performance & Landscape</h3>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                            <div id="plot-performance" class="plot-wrapper" style="height: 300px"></div>
-                            <div id="plot-landscape" class="plot-wrapper" style="height: 300px"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -178,7 +219,7 @@
             <div id="history" class="view-panel hidden">
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px">
-                        <h3>Experiment History (from Firebase)</h3>
+                        <h3>Routing Logs (Mission Control)</h3>
                         <button id="refreshHistory" class="tab-btn" style="padding:0"><span
                                 class="material-symbols-outlined">refresh</span></button>
                     </div>
@@ -224,7 +265,7 @@
                             <span class="h-time">${date}</span>
                         </div>
                         <div class="h-res">
-                            C: ${item.classical_cost} | Q: ${item.quantum_cost} (|${item.bitstring}⟩)
+                            C: ${item.classical_cost} | Q: ${item.quantum_cost} [${item.path}]
                         </div>
                     `;
                     historyList.appendChild(li);

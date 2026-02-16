@@ -1,14 +1,21 @@
-# Qiskit-based QAOA implementation for TSP (Route Optimization)
-# Supports both local simulation AND real IBM Quantum hardware!
+# Qiskit-based QAOA implementation for Orbital Traffic Control (Satellite Routing)
+# Optimizing path selection in dynamic LEO satellite networks.
 
 import numpy as np
 from typing import List, Tuple, Optional
-from src.utilities import Graph, get_cost
+
 import os
 
 
 
-# Global flag to track optimization library availability
+
+# Load environment variables
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    print("python-dotenv not installed, will rely on system path.")
+
 IS_TSP_LIB_AVAILABLE = False
 
 # Try to import Qiskit modules (Qiskit 2.x compatible)
@@ -41,11 +48,10 @@ try:
 except ImportError:
     IBM_AVAILABLE = False
 
-# Global variable to store the service
+# IBM Quantum Service Configuration
 _ibm_service = None
+HARDCODED_TOKEN = None
 
-# HARDCODED TOKEN AS REQUESTED
-HARDCODED_TOKEN = "tIcP7B6Jz611jtHpDrZwJXAY2VnvJ1N4bKtlhOg8nvCY"
 
 def get_ibm_service(token: Optional[str] = None) -> Optional['QiskitRuntimeService']:
     """
@@ -67,18 +73,27 @@ def get_ibm_service(token: Optional[str] = None) -> Optional['QiskitRuntimeServi
     if not api_token:
         api_token = HARDCODED_TOKEN
     
+    
     try:
-        # Save credentials for future use
+        # Save credentials for future use if token provided
         if api_token:
             QiskitRuntimeService.save_account(channel="ibm_quantum", token=api_token, overwrite=True)
+            
+        # Try primary channel
+        try:
             _ibm_service = QiskitRuntimeService(channel="ibm_quantum")
-        else:
-            # Try to use saved credentials
-            _ibm_service = QiskitRuntimeService(channel="ibm_quantum")
+        except Exception:
+            # Fallback for newer/older versions or specific account types
+            try:
+                _ibm_service = QiskitRuntimeService(channel="ibm_cloud")
+            except Exception:
+                 _ibm_service = QiskitRuntimeService(channel="ibm_quantum_platform") # As suggested by error
+                 
         return _ibm_service
     except Exception as e:
         print(f"Error initializing IBM Quantum Service: {e}")
         return None
+
 
 
 def list_available_backends(token: Optional[str] = None) -> List[str]:
@@ -180,8 +195,8 @@ def qaoa_tsp(
                 # Use SPSA optimizer for noisy hardware
                 optimizer = SPSA(maxiter=50)
             except Exception as e:
-                print(f"⚠️ Backend {backend_name} not available: {e}. Falling back to simulator.")
-                use_real_hardware = False
+                raise RuntimeError(f"Failed to connect to IBM Backend '{backend_name}': {e}. Please check your IBM Quantum Token.")
+
     
     if not use_real_hardware:
         print("💻 Running on local quantum simulator")
@@ -258,16 +273,4 @@ def create_tsp_hamiltonian_manual(dist_matrix: np.ndarray) -> 'SparsePauliOp':
     return SparsePauliOp(['I'*num_qubits], [0.0])
 
 
-def qaoa(
-    G, 
-    layer_count: int = 1, 
-    shots: int = 1000, 
-    const: float = 0, 
-    save_file: bool = False,
-    backend_name: str = "simulator",
-    ibm_token: Optional[str] = None
-) -> Tuple[float, str]:
-    """
-    Legacy Wrapper for Max-Cut (deprecated) -> Redirects to TSP mocking if G is not dist matrix
-    """
-    pass
+

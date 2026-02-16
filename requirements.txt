@@ -1,12 +1,10 @@
-streamlit
-networkx
 plotly
 numpy
 qiskit
 qiskit-algorithms
 qiskit-ibm-runtime
-matplotlib
-scipy
 flask
 gunicorn
 firebase-admin
+skyfield
+requests
