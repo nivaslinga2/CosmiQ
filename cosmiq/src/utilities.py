@@ -38,7 +38,7 @@ def generate_orbital_constellation(n_nodes, seed):
             # Distance represents Latency (ms) 
             dist_matrix[i, j] = np.linalg.norm(coords[i] - coords[j]) * 50 
             
-    return coords, dist_matrix, names
+    return coords, dist_matrix, names, [] # Return empty TLEs for simulated data
 
 def solve_tsp_brute_force(dist_matrix):
     """
@@ -126,7 +126,7 @@ def fetch_real_satellite_data(group="starlink", n_nodes=5):
                 # Distance in normalized units * 50 for ms approximation
                 dist_matrix[i, j] = np.linalg.norm(coords[i] - coords[j]) * 50
                 
-        return coords, dist_matrix, names
+        return coords, dist_matrix, names, tles
     except Exception as e:
         print(f"Error fetching real satellite data: {e}")
-        return None, None, None
+        return None, None, None, None

@@ -259,13 +259,22 @@
 
                     const date = item.timestamp ? new Date(item.timestamp).toLocaleString() : 'Just now';
 
+                    // Map indices to names if names exist
+                    let pathNames = item.path;
+                    if (Array.isArray(item.path) && item.names && item.names.length > 0) {
+                        pathNames = item.path.map(idx => item.names[idx] || idx).join(' → ');
+                    }
+
                     li.innerHTML = `
                         <div class="history-meta">
-                            <span style="font-weight:500; font-size:16px">N=${item.actual_n} Graph</span>
+                            <span style="font-weight:500; font-size:16px">N=${item.actual_n} Nodes 🛰️</span>
                             <span class="h-time">${date}</span>
                         </div>
                         <div class="h-res">
-                            C: ${item.classical_cost} | Q: ${item.quantum_cost} [${item.path}]
+                            <b>Results:</b> C: ${item.classical_cost}ms | Q: ${item.quantum_cost}ms <br>
+                            <span style="color: var(--md-sys-color-primary); font-size: 13px; font-family: 'Roboto Mono', monospace;">
+                                Path: ${pathNames}
+                            </span>
                         </div>
                     `;
                     historyList.appendChild(li);

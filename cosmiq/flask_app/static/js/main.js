@@ -135,6 +135,27 @@ document.addEventListener('DOMContentLoaded', () => {
         animate();
     }
 
+    function createTextLabel(text) {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 256;
+        canvas.height = 64;
+
+        context.font = 'Bold 24px Inter, Roboto, sans-serif';
+        context.fillStyle = 'rgba(255, 255, 255, 1)';
+        context.textAlign = 'center';
+        context.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        context.shadowBlur = 6;
+        context.fillText(text, 128, 40);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(3, 0.75, 1);
+        sprite.renderOrder = 999;
+        return sprite;
+    }
+
     function createSatelliteModel() {
         const sat = new THREE.Group();
 
@@ -245,7 +266,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 scene.add(satGroup);
                 satellites.push(satGroup);
 
-                if (names[i]) satGroup.name = names[i];
+                if (names[i]) {
+                    satGroup.name = names[i];
+                    const label = createTextLabel(names[i]);
+                    label.position.set(0, 0.6, 0); // Position slightly above the satellite body
+                    satGroup.add(label);
+                }
 
                 const beacon = new THREE.PointLight(0xAECBFA, 1, 3);
                 beacon.position.copy(pos);
@@ -488,11 +514,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Optimized Path Text
+        // Optimized Path Text (Show Names)
         const bitstringVal = document.getElementById('bitstring-val');
         if (bitstringVal) {
-            const pathStr = Array.isArray(data.path) ? data.path.join(' → ') : data.path;
-            bitstringVal.textContent = pathStr;
+            let pathDisplay = "";
+            if (Array.isArray(data.path)) {
+                pathDisplay = data.path.map(idx => data.names[idx] || `Node ${idx}`).join(' → ');
+            } else {
+                pathDisplay = data.path;
+            }
+            bitstringVal.textContent = pathDisplay;
         }
     }
 });

@@ -24,22 +24,35 @@ except ImportError:
 app = Flask(__name__)
 
 # --- Helper Functions ---
-def create_plot_tsp(coords, path, title, color='#00E5FF'):
+def create_plot_tsp(coords, path, title, color='#00E5FF', names=None):
     """
     Creates a 3D Plotly visualization of the routing path.
     """
     fig = go.Figure()
     
-    # Draw Satellites
+    # 1. Draw Satellites with Labels
+    labels = names if names else [f"Sat {i}" for i in range(len(coords))]
+    
     fig.add_trace(go.Scatter3d(
         x=coords[:,0], y=coords[:,1], z=coords[:,2],
         mode='markers+text',
-        marker=dict(size=8, color=color, opacity=0.8),
-        text=[f"Sat {i}" for i in range(len(coords))],
+        marker=dict(
+            size=10, 
+            color=color, 
+            opacity=1.0, 
+            line=dict(color='white', width=2)
+        ),
+        text=labels,
+        textposition="top center",
+        textfont=dict(
+            family="Inter, Roboto, Arial",
+            size=14,
+            color="white"
+        ),
         name='Satellites'
     ))
     
-    # Draw Routing Path
+    # 2. Draw Routing Path
     if path:
         full_path = path + [path[0]] # Close the loop
         px = [coords[i][0] for i in full_path]
@@ -48,14 +61,14 @@ def create_plot_tsp(coords, path, title, color='#00E5FF'):
         fig.add_trace(go.Scatter3d(
             x=px, y=py, z=pz,
             mode='lines',
-            line=dict(color=color, width=4),
+            line=dict(color=color, width=5),
             name='Routing Path'
         ))
 
     fig.update_layout(
         title=title,
         template='plotly_dark',
-        margin=dict(l=0, r=0, b=0, t=40),
+        margin=dict(l=0, r=0, b=0, t=50),
         scene=dict(
             xaxis=dict(visible=False),
             yaxis=dict(visible=False),
@@ -63,7 +76,8 @@ def create_plot_tsp(coords, path, title, color='#00E5FF'):
             bgcolor='rgba(0,0,0,0)'
         ),
         paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)'
+        plot_bgcolor='rgba(0,0,0,0)',
+        showlegend=False
     )
     return fig
 
@@ -124,8 +138,8 @@ def run_simulation():
     end_q = time.time()
     
     # 4. Topology Visualizations
-    fig_c = create_plot_tsp(coords, c_path, "Classical Orbital Topology", color='#0068C9')
-    fig_q = create_plot_tsp(coords, q_path, "Quantum Orbital Topology", color='#AECBFA')
+    fig_c = create_plot_tsp(coords, c_path, "Classical Orbital Topology", color='#0068C9', names=names)
+    fig_q = create_plot_tsp(coords, q_path, "Quantum Orbital Topology", color='#AECBFA', names=names)
     
     # 5. Performance Chart
     fig_perf = go.Figure(data=[
