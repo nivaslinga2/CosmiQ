@@ -200,7 +200,13 @@ def qaoa_tsp(
     
     if not use_real_hardware:
         print("💻 Running on local quantum simulator")
-        sampler = StatevectorSampler()
+        try:
+            from qiskit_aer.primitives import Sampler as AerSampler
+            sampler = AerSampler()
+            print("🚀 Using High-Performance Aer Simulator")
+        except ImportError:
+            sampler = StatevectorSampler()
+            print("⚠️ Aer not found, using standard StatevectorSampler")
 
 
     # 3. Create and run QAOA
