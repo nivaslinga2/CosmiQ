@@ -479,3 +479,40 @@ input[type=range] {
 .view-toggle-btn:hover {
     background: var(--md-sys-color-surface-container-high);
 }
+
+/* Sidebar Satellite List */
+.satellite-sidebar-list {
+    list-style: none;
+    margin-top: 12px;
+}
+
+.sat-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--md-sys-color-on-background);
+    border: 1px solid transparent;
+}
+
+.sat-sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sat-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #81C784;
+    box-shadow: 0 0 6px rgba(129, 199, 132, 0.5);
+}
+
+.sat-name {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+}

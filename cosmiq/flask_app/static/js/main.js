@@ -472,6 +472,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const qBtn = document.querySelector('[data-view="quantum"]');
         if (qBtn) qBtn.classList.add('active');
 
+        // Update Sidebar Fleet List
+        const fleetSection = document.getElementById('fleet-section');
+        const satelliteList = document.getElementById('satellite-list');
+        if (fleetSection && satelliteList && data.names) {
+            fleetSection.classList.remove('hidden');
+            satelliteList.innerHTML = data.names.map(name => `
+                <li class="sat-sidebar-item">
+                    <span class="sat-dot"></span>
+                    <span class="sat-name">${name}</span>
+                </li>
+            `).join('');
+        }
+
         // Metrics
         const cCostVal = document.getElementById('c-cost-val');
         const cTimeVal = document.getElementById('c-time-val');

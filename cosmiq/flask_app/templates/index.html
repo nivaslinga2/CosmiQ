@@ -29,9 +29,9 @@
     <!-- Left Navigation Drawer -->
     <aside class="sidebar">
         <div class="logo-area">
-            <span class="material-symbols-outlined logo-icon" style="color:#FFA000">auto_awesome</span>
-            <span class="logo-text">cosm<span style="font-weight:300">iQ</span><span
-                    style="color:var(--md-sys-color-primary); margin-left:2px">.live</span></span>
+            <span class="material-symbols-outlined logo-icon" style="color:#4285F4">hub</span>
+            <span class="logo-text">GDG <span style="font-weight:300; color:var(--md-sys-color-outline)">|</span>
+                cosm<span style="font-weight:300">iQ</span></span>
         </div>
 
         <div class="scroll-area">
@@ -39,8 +39,6 @@
 
                 <div class="form-section">
                     <span class="section-title">Constellation Config</span>
-
-                    <!-- Removed Topology Select as TSP is fully connected distance graph -->
 
                     <div class="input-group">
                         <label class="input-label">Data Source</label>
@@ -111,6 +109,18 @@
                     <span class="material-symbols-outlined">satellite_alt</span>
                     Optimize Routing
                 </button>
+
+                <div id="fleet-section" class="form-section hidden"
+                    style="margin-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                    <span class="section-title" style="color: #81C784;">
+                        <span class="material-symbols-outlined"
+                            style="font-size: 16px; vertical-align: middle;">sensors</span>
+                        Active Fleet
+                    </span>
+                    <ul id="satellite-list" class="satellite-sidebar-list">
+                        <!-- Names injected here -->
+                    </ul>
+                </div>
 
             </form>
         </div>
