@@ -4,6 +4,7 @@ qiskit
 qiskit-algorithms
 qiskit-ibm-runtime
 qiskit-optimization
+qiskit-aer
 flask
 gunicorn
 firebase-admin
