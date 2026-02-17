@@ -269,8 +269,8 @@ def create_tsp_hamiltonian_manual(dist_matrix: np.ndarray) -> 'SparsePauliOp':
     n = len(dist_matrix)
     num_qubits = n**2
     
-    # Create a dummy Identity operator
-    return SparsePauliOp(['I'*num_qubits], [0.0])
+    # Create a dummy Identity operator with non-zero coefficient to avoid crash
+    return SparsePauliOp(['I'*num_qubits], [1.0])
 
 
 
