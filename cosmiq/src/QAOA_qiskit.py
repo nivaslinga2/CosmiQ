@@ -18,10 +18,14 @@ except ImportError:
 
 IS_TSP_LIB_AVAILABLE = False
 
-# Try to import Qiskit modules (Qiskit 2.x compatible)
+# Try to import Qiskit modules (Qiskit 1.x/2.x compatible)
 try:
     from qiskit import QuantumCircuit
-    from qiskit.primitives import Sampler
+    try:
+        from qiskit.primitives import SamplerV2 as Sampler
+    except ImportError:
+        from qiskit.primitives import StatevectorSampler as Sampler
+    
     from qiskit_algorithms import QAOA, NumPyMinimumEigensolver
     from qiskit_algorithms.optimizers import COBYLA, SPSA
     from qiskit.quantum_info import SparsePauliOp
@@ -200,13 +204,9 @@ def qaoa_tsp(
     
     if not use_real_hardware:
         print("💻 Running on local quantum simulator")
-        try:
-            from qiskit_aer.primitives import Sampler as AerSampler
-            sampler = AerSampler()
-            print("🚀 Using High-Performance Aer (V1) Simulator")
-        except ImportError:
-            sampler = Sampler()
-            print("⚠️ Aer not found, using standard V1 Sampler")
+        # Use StatevectorSampler (V2) as it is more robust than Aer V2 for high-level algorithms
+        sampler = Sampler() 
+        print("🚀 Using Qiskit StatevectorSampler (V2)")
 
 
     # 3. Create and run QAOA
